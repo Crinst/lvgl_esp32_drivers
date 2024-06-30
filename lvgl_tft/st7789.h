@@ -21,6 +21,9 @@ extern "C"
 
 #include "sdkconfig.h"
 
+#define LV_HOR_RES_DEF         LV_HOR_RES_MAX
+#define LV_VER_RES_DEF         LV_VER_RES_MAX
+
 #define ST7789_DC       CONFIG_LV_DISP_PIN_DC
 #define ST7789_RST      CONFIG_LV_DISP_PIN_RST
 

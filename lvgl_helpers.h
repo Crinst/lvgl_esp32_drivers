@@ -19,9 +19,38 @@ extern "C" {
 #include "lvgl_tft/esp_lcd_backlight.h"
 #include "lvgl_touch/touch_driver.h"
 
+
+
 /*********************
  *      DEFINES
  *********************/
+
+#include "hal/spi_hal.h"
+#include "esp_idf_version.h"
+
+// Backwards compability with existing projects
+
+#ifndef LV_HOR_RES_MAX
+#  ifdef CONFIG_LV_HOR_RES_MAX
+#    define LV_HOR_RES_MAX CONFIG_LV_HOR_RES_MAX
+#  else
+#    define  LV_HOR_RES_MAX          (480)
+#  endif
+#endif
+#ifndef LV_VER_RES_MAX
+#  ifdef CONFIG_LV_VER_RES_MAX
+#    define LV_VER_RES_MAX CONFIG_LV_VER_RES_MAX
+#  else
+#    define  LV_VER_RES_MAX          (320)
+#  endif
+#endif
+
+#if ESP_IDF_VERSION_MAJOR >= 5
+    #define portTICK_DELAY_MS portTICK_PERIOD_MS
+#elif USE_PORT_TICK_RATE_MS
+    #define portTICK_DELAY_MS portTICK_RATE_MS
+#endif
+
 
 /* DISP_BUF_SIZE value doesn't have an special meaning, but it's the size
  * of the buffer(s) passed to LVGL as display buffers. The default values used
@@ -34,27 +63,42 @@ extern "C" {
  * color format being used, for RGB565 each pixel needs 2 bytes.
  * When using the mono theme, the display pixels can be represented in one bit,
  * so the buffer size can be divided by 8, e.g. see SSD1306 display size. */
+
+
+#define TFT_DISPLAY_BUFFER_SIZE_IN_BITS (LV_HOR_RES_MAX * 40 * 3 * 8)
+#define TFT_DISPLAY_BUFFER_SIZE (LV_HOR_RES_MAX * 40)
+
+#if CONFIG_IDF_TARGET_ESP32S3 
+    #define DMA_MAX_BIT_LENGHT (1<<18) // according with SPI_LL_DMA_MAX_BIT_LEN in spi_ll.h
+#else
+    #define DMA_MAX_BIT_LENGHT (1<<24) // according with SPI_LL_DMA_MAX_BIT_LEN in spi_ll.h
+#endif
+
+#define TFT_DISPLAY_BUFFER_SIZE_OVERFLOW_PROTECTION ((TFT_DISPLAY_BUFFER_SIZE_IN_BITS>DMA_MAX_BIT_LENGHT)? (((DMA_MAX_BIT_LENGHT-1000)/8)/3) :TFT_DISPLAY_BUFFER_SIZE)
+
+
 #if defined (CONFIG_CUSTOM_DISPLAY_BUFFER_SIZE)
 #define DISP_BUF_SIZE   CONFIG_CUSTOM_DISPLAY_BUFFER_BYTES
 #else
 #if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7789)
-#define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 40)
+//#define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 40)
+#define DISP_BUF_SIZE (TFT_DISPLAY_BUFFER_SIZE_OVERFLOW_PROTECTION)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7735S
-#define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 40)
+#define DISP_BUF_SIZE  (TFT_DISPLAY_BUFFER_SIZE_OVERFLOW_PROTECTION)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ST7796S
-#define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 40)
+#define DISP_BUF_SIZE  (TFT_DISPLAY_BUFFER_SIZE_OVERFLOW_PROTECTION)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_HX8357
-#define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 40)
+#define DISP_BUF_SIZE  (TFT_DISPLAY_BUFFER_SIZE_OVERFLOW_PROTECTION)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_SH1107
 #define DISP_BUF_SIZE  (LV_HOR_RES_MAX * LV_VER_RES_MAX)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9481
-#define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 40)
+#define DISP_BUF_SIZE  (TFT_DISPLAY_BUFFER_SIZE_OVERFLOW_PROTECTION)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9486
-#define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 40)
+#define DISP_BUF_SIZE  (TFT_DISPLAY_BUFFER_SIZE_OVERFLOW_PROTECTION)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9488
-#define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 40)
+#define DISP_BUF_SIZE  (TFT_DISPLAY_BUFFER_SIZE_OVERFLOW_PROTECTION)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_ILI9341
-#define DISP_BUF_SIZE  (LV_HOR_RES_MAX * 40)
+#define DISP_BUF_SIZE  (TFT_DISPLAY_BUFFER_SIZE_OVERFLOW_PROTECTION)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_SSD1306
 #if defined (CONFIG_LV_THEME_MONO)
 #define DISP_BUF_SIZE  (LV_HOR_RES_MAX * (LV_VER_RES_MAX / 8))
