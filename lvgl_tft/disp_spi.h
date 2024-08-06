@@ -46,10 +46,10 @@ typedef enum _disp_spi_send_flag_t {
 /**********************
  * GLOBAL PROTOTYPES
  **********************/
-void disp_spi_add_device(spi_host_device_t host);
+void disp_spi_add_device(spi_host_device_t host, uint8_t cs_gpio);
 void disp_spi_add_device_config(spi_host_device_t host, spi_device_interface_config_t *devcfg);
-void disp_spi_add_device_with_speed(spi_host_device_t host, int clock_speed_hz);
-void disp_spi_change_device_speed(int clock_speed_hz);
+void disp_spi_add_device_with_speed(spi_host_device_t host, int clock_speed_hz, uint8_t cs_gpio);
+void disp_spi_change_device_speed(int clock_speed_hz, uint8_t cs_gpio);
 void disp_spi_remove_device();
 
 /*	Important! 

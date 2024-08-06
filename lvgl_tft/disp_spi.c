@@ -111,21 +111,21 @@ void disp_spi_add_device_config(spi_host_device_t host, spi_device_interface_con
     assert(ret==ESP_OK);
 }
 
-void disp_spi_add_device(spi_host_device_t host)
+void disp_spi_add_device(spi_host_device_t host, uint8_t cs_gpio)
 {
-    disp_spi_add_device_with_speed(host, SPI_TFT_CLOCK_SPEED_HZ);
+    disp_spi_add_device_with_speed(host, SPI_TFT_CLOCK_SPEED_HZ, cs_gpio);
 }
 
-void disp_spi_add_device_with_speed(spi_host_device_t host, int clock_speed_hz)
+void disp_spi_add_device_with_speed(spi_host_device_t host, int clock_speed_hz, uint8_t cs_gpio)
 {
     ESP_LOGI(TAG, "Adding SPI device");
     ESP_LOGI(TAG, "Clock speed: %dHz, mode: %d, CS pin: %d",
-        clock_speed_hz, SPI_TFT_SPI_MODE, DISP_SPI_CS);
+        clock_speed_hz, SPI_TFT_SPI_MODE, cs_gpio);
 
     spi_device_interface_config_t devcfg={
         .clock_speed_hz = clock_speed_hz,
         .mode = SPI_TFT_SPI_MODE,
-        .spics_io_num=DISP_SPI_CS,              // CS pin
+        .spics_io_num=cs_gpio,              // CS pin
         .input_delay_ns=DISP_SPI_INPUT_DELAY_NS,
         .queue_size=SPI_TRANSACTION_POOL_SIZE,
         .pre_cb=NULL,
@@ -157,14 +157,14 @@ void disp_spi_add_device_with_speed(spi_host_device_t host, int clock_speed_hz)
 	}
 }
 
-void disp_spi_change_device_speed(int clock_speed_hz)
+void disp_spi_change_device_speed(int clock_speed_hz, uint8_t cs_gpio)
 {
     if (clock_speed_hz <= 0) {
         clock_speed_hz = SPI_TFT_CLOCK_SPEED_HZ;
     }
     ESP_LOGI(TAG, "Changing SPI device clock speed: %d", clock_speed_hz);
     disp_spi_remove_device();
-    disp_spi_add_device_with_speed(spi_host, clock_speed_hz);
+    disp_spi_add_device_with_speed(spi_host, clock_speed_hz, cs_gpio);
 }
 
 void disp_spi_remove_device()

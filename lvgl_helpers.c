@@ -50,7 +50,7 @@
  **********************/
 
 /* Interface and driver initialization */
-void lvgl_driver_init(void)
+void lvgl_driver_init(spi_host_device_t spi_bus, uint8_t disp_cs_gpio, uint8_t touch_cs_gpio)
 {
     /* Since LVGL v8 LV_HOR_RES_MAX and LV_VER_RES_MAX are not defined, so
      * print it only if they are defined. */
@@ -62,13 +62,15 @@ void lvgl_driver_init(void)
 
 #if defined (CONFIG_LV_TFT_DISPLAY_CONTROLLER_FT81X)
     ESP_LOGI(TAG, "Initializing SPI master for FT81X");
-
+    /*
     lvgl_spi_driver_init(TFT_SPI_HOST,
         DISP_SPI_MISO, DISP_SPI_MOSI, DISP_SPI_CLK,
         SPI_BUS_MAX_TRANSFER_SZ, 1,
         DISP_SPI_IO2, DISP_SPI_IO3);
-
     disp_spi_add_device(TFT_SPI_HOST);
+    
+    */
+    disp_spi_add_device(spi_bus, disp_cs_gpio);
     disp_driver_init();
 
 #if defined (CONFIG_LV_TOUCH_CONTROLLER_FT81X)
@@ -80,7 +82,7 @@ void lvgl_driver_init(void)
 
 #if defined (SHARED_SPI_BUS)
     ESP_LOGI(TAG, "Initializing shared SPI master");
-
+    /*
     lvgl_spi_driver_init(TFT_SPI_HOST,
         TP_SPI_MISO, DISP_SPI_MOSI, DISP_SPI_CLK,
         SPI_BUS_MAX_TRANSFER_SZ, 1,
@@ -88,6 +90,10 @@ void lvgl_driver_init(void)
 
     disp_spi_add_device(TFT_SPI_HOST);
     tp_spi_add_device(TOUCH_SPI_HOST);
+    */
+
+    disp_spi_add_device(spi_bus, disp_cs_gpio);
+    tp_spi_add_device(spi_bus, touch_cs_gpio);
 
     disp_driver_init();
     touch_driver_init();
@@ -99,12 +105,15 @@ void lvgl_driver_init(void)
 #if defined CONFIG_LV_TFT_DISPLAY_PROTOCOL_SPI
     ESP_LOGI(TAG, "Initializing SPI master for display");
 
+    /*
     lvgl_spi_driver_init(TFT_SPI_HOST,
         DISP_SPI_MISO, DISP_SPI_MOSI, DISP_SPI_CLK,
         SPI_BUS_MAX_TRANSFER_SZ, 1,
         DISP_SPI_IO2, DISP_SPI_IO3);
-
-    disp_spi_add_device(TFT_SPI_HOST);
+    */
+    //disp_spi_add_device(TFT_SPI_HOST);
+    
+    disp_spi_add_device(spi_bus, disp_cs_gpio);
 
     disp_driver_init();
 #elif defined (CONFIG_LV_I2C_DISPLAY)
@@ -118,12 +127,15 @@ void lvgl_driver_init(void)
     #if defined (CONFIG_LV_TOUCH_DRIVER_PROTOCOL_SPI)
         ESP_LOGI(TAG, "Initializing SPI master for touch");
 
+        /*
         lvgl_spi_driver_init(TOUCH_SPI_HOST,
             TP_SPI_MISO, TP_SPI_MOSI, TP_SPI_CLK,
-            0 /* Defaults to 4094 */, 2,
+            0 , 2,
             -1, -1);
-
         tp_spi_add_device(TOUCH_SPI_HOST);
+        */
+        
+        tp_spi_add_device(spi_bus, touch_cs_gpio);
 
         touch_driver_init();
     #elif defined (CONFIG_LV_I2C_TOUCH)

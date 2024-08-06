@@ -47,12 +47,12 @@ void tp_spi_add_device_config(spi_host_device_t host, spi_device_interface_confi
 	assert(ret==ESP_OK);
 }
 
-void tp_spi_add_device(spi_host_device_t host)
+void tp_spi_add_device(spi_host_device_t host, uint8_t cs_gpio)
 {
 	spi_device_interface_config_t devcfg={
                 .clock_speed_hz = SPI_TOUCH_CLOCK_SPEED_HZ,
                 .mode = SPI_TOUCH_SPI_MODE,
-		.spics_io_num=TP_SPI_CS,               //CS pin
+		.spics_io_num=cs_gpio,               //CS pin
 		.queue_size=1,
 		.pre_cb=NULL,
 		.post_cb=NULL,
