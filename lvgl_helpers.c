@@ -49,8 +49,10 @@
  *   GLOBAL FUNCTIONS
  **********************/
 
+disp_backlight_h backlight = NULL;
+
 /* Interface and driver initialization */
-void lvgl_driver_init(spi_host_device_t spi_bus, uint8_t disp_cs_gpio, uint8_t touch_cs_gpio)
+void *lvgl_driver_init(spi_host_device_t spi_bus, uint8_t disp_cs_gpio, uint8_t touch_cs_gpio)
 {
     /* Since LVGL v8 LV_HOR_RES_MAX and LV_VER_RES_MAX are not defined, so
      * print it only if they are defined. */
@@ -115,7 +117,7 @@ void lvgl_driver_init(spi_host_device_t spi_bus, uint8_t disp_cs_gpio, uint8_t t
     
     disp_spi_add_device(spi_bus, disp_cs_gpio);
 
-    disp_driver_init();
+    backlight = disp_driver_init();
 #elif defined (CONFIG_LV_I2C_DISPLAY)
     disp_driver_init();
 #else
@@ -149,6 +151,9 @@ void lvgl_driver_init(spi_host_device_t spi_bus, uint8_t disp_cs_gpio, uint8_t t
     #endif
 #else
 #endif
+
+    return backlight;
+
 }
 
 
